@@ -2,7 +2,7 @@
 
 Run every check on one OP-XY (OS 1.2.1), top to bottom, in one project, on the exact commit you will publish. Host tests cannot answer these questions. Add the player's own checks under "Musical features".
 
-**Setup:** one track with a simple sustaining synth patch, with this player as its player.
+**Setup:** one track with a simple sustaining synth patch, with Twin Arp as its player, at its defaults: A on 1/16, up, 1 octave, 0; B on 1/8, up, 1 octave, -12. Hold or step-sequence C, E, G unless a check says otherwise.
 
 ## Core timing
 
@@ -27,7 +27,13 @@ Run every check on one OP-XY (OS 1.2.1), top to bottom, in one project, on the e
 
 ## Musical features
 
-13. (Add the player's own checks here.)
+13. **Two arps.** Pass: A plays C E G on sixteenths, B plays C E G an octave down on eighths, both from the first step.
+14. **Independent rates.** A `1/8t` against B `1/8`, with a drum on quarter notes. Pass: three A notes and two B notes per beat, locked for several bars.
+15. **Styles and off.** Try every STYLE on each arp. Pass: each sounds right, and `off` silences only that arp.
+16. **Transpose.** A `+12`, B `-24`. Pass: both shift. Push A to `+24` with high keys: notes past the top are skipped without hanging.
+17. **No re-strikes.** Hold two or more keys with a long, sustaining patch. Pass: one arp's notes never cut or re-strike the other's.
+18. **One key.** Hold a single key. Pass: both arps play, though each new note may re-strike the other arp's note, and nothing hangs.
+19. **Screen.** Pass: the two lanes light the note each arp plays, and the centre shows both notes, with `-` for an arp that is off.
 
 ## Results
 

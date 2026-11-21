@@ -3,11 +3,11 @@
 - **SDK location:** the Open-XY SDK lives at `../open-xy`. Before writing code, read `sdk/include/opxy/player.hpp`, the "Note players" section of `docs/api.md`, and `../op-xy-euclidean-arp` (a finished, device-tested player).
 - **Target:** embedded C++ for the Analog Devices Blackfin (OP-XY OS 1.2.1). No heap allocation (`new`, `malloc`, `std::vector`, `std::string`) in `player.cpp`. Keep all state in `State` (at most 2048 bytes, valid when zeroed). The host tests may use the standard library.
 - **Verify after every code edit:**
-  `../open-xy/.venv/bin/python ../open-xy/sdk.py test --machine machines/newplayer --cxx /opt/homebrew/opt/llvm/bin/clang++`
+  `../open-xy/.venv/bin/python ../open-xy/sdk.py test --machine machines/twin_arp --cxx /opt/homebrew/opt/llvm/bin/clang++`
   Add `--firmware` before committing, to compile for Blackfin as well.
-- **No browser preview:** `sdk.py preview` does not support players. Review the screen with `python3 tools/gen_panel.py --lit 3 --out <file>.svg`, then test on the device.
+- **No browser preview:** `sdk.py preview` does not support players. Review the screen with `python3 tools/gen_panel.py --state 1,7 --out <file>.svg`, then test on the device.
 - **Git hygiene:** commit to this repository only when the user asks. Never modify files inside `../open-xy`.
-- **Naming:** `newplayer` is a placeholder. When the user chooses a name, run `python3 tools/rename.py <id> "<Display Name>"`.
+- **Machine:** Twin Arp (`twin_arp`), two arpeggiators in parallel. The ID is final once it is in the catalog.
 
 ## Device-verified lessons (from Euclidean Arp, OS 1.2.1)
 

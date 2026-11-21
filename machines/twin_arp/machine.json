@@ -1,0 +1,6 @@
+{
+  "schema": 1,
+  "sdk": "1.16",
+  "kind": "player",
+  "description": "Two arpeggiators playing the same held notes, each with its own rate, style, octaves and transpose."
+}
