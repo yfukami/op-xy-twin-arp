@@ -14,7 +14,7 @@ Page 1 is arp A, and page 2 is arp B. Press any encoder to switch pages.
 | 4 | TRANS: -24 to +24 semitones |
 
 - **Defaults:** A plays 1/16 up, and B plays 1/8 up, an octave lower, so a new track gives you a lead over a bass straight away.
-- **Timing:** both arps start on the first key and run on their own clocks.
+- **Timing:** both arps start on the first key and run on their own clocks. Keys that arrive together, such as a sequenced chord, start at once. A key that arrives on its own waits about 15 ms for the rest of a hand-played chord, so both arps start on its lowest note.
 - **Gate:** fixed at half a step.
 - **Out of range:** a note transposed past MIDI's range is skipped, and that arp moves on.
 - **One key held:** each sounding note lives with a held key. With two or more keys held, the two arps always use different keys. With only one key held, both arps share it, so a new note from one arp strikes the other arp's sounding note again. This is a limit of the OP-XY's player API.

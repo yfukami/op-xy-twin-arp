@@ -155,18 +155,40 @@ static void carriers() {
     require(one.sounding() == 0);
 }
 
-static void late_keys_regroup() {
-    // A hand-played chord whose lowest key lands last: both arps restart from it.
+static void hand_played_chords() {
+    // A key arriving alone waits about 15 ms (7 steps without a tempo) for the rest
+    // of a hand-played chord: both arps then start on its lowest note, and nothing
+    // is struck twice. The steps still count from the first key.
+    const u32 wait = machine::kDefaultChordWindow;
     Host h;
     defaults(h);
     h.press(67);
     h.step(2);
     h.press(64);
     h.press(60);
-    h.step(10);
-    const Notes a = pitches(ons(h, 60, 127)), b = pitches(ons(h, 0, 59));
-    require(a.back() == 60 && b.back() == 48);
-    require(h.sounding() == 2);
+    h.step(wait);
+    require(pitches(ons(h, 60, 127)) == Notes({60}) && pitches(ons(h, 0, 59)) == Notes({48}));
+    require(ons(h, 0, 127)[0].time == wait && h.sounding() == 2);
+    h.step(60 - wait);
+    require(ons(h, 60, 127).back().pitch == 64 && ons(h, 60, 127).back().time == 60);
+
+    // Keys arriving together start at once; a lone key waits.
+    Host together;
+    defaults(together);
+    together.press(60); together.press(64);
+    together.step(1);
+    require(ons(together, 0, 127).size() == 2 && ons(together, 0, 127)[0].time == 0);
+    Host alone;
+    defaults(alone);
+    alone.press(60);
+    alone.step(wait);
+    require(alone.events.empty());
+    alone.step(1);
+    require(ons(alone, 0, 127).size() == 2 && ons(alone, 0, 127)[0].time == wait);
+
+    // About 15 ms at any tempo, under half the faster arp's step.
+    require(machine::chord_window(1200, 60) == 7 && machine::chord_window(600, 60) == 3);
+    require(machine::chord_window(3000, 20) == 10 && machine::chord_window(0, 60) == 7);
 }
 
 static void cleanup() {
@@ -227,7 +249,7 @@ int main() {
     styles_and_off();
     transpose();
     carriers();
-    late_keys_regroup();
+    hand_played_chords();
     cleanup();
     screen();
     std::puts("twin_arp: all checks passed");

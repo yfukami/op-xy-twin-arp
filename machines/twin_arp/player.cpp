@@ -31,7 +31,7 @@ const u32 kPool = kSlots * kOctaves;
 const u32 kDrainLimit = 8;             // the SDK's updates per drain
 const u16 kParkedDelay = 65535;        // player steps before a parked tone would sound
 const u32 kRearmInterval = 32768;      // parked tones are renewed well before that
-const u32 kDefaultChordWindow = 9;     // player steps, about 19 ms at 120 BPM
+const u32 kDefaultChordWindow = 7;     // player steps, about 15 ms at 120 BPM
 
 const u32 kRates = 9;
 enum Style { Up, Down, UpDown, DownUp, Order, Random, Off };
@@ -50,14 +50,14 @@ struct Arp {
     u8 pool_dirty, returning, has_last, last_pitch;
     u8 carrier;            // the slot carrying its sounding note, plus one; 0 when silent
     u8 pitch, velocity;    // the note it sounds (or sounded last)
-    u8 has_note, start_played;
+    u8 has_note;
 };
 
 struct State {
     Slot slots[kSlots];
     Arp arps[kArps];
     u32 order_counter, rearm, rng, start_wait;
-    u8 active, dirty, event_pending, draining, drain_calls, started, regroup;
+    u8 active, dirty, event_pending, draining, drain_calls, started, waiting;
 };
 
 struct Params {
@@ -242,30 +242,17 @@ inline bool trigger(State& s, u32 which, const Params& p) {
     return true;
 }
 
-// A key landed just after the first step: choose that step's note again with it included.
-inline void regroup(State& s, u32 which, const Params& p) {
-    Arp& a = s.arps[which];
-    if (p.style[which] == Random || p.style[which] == Off) return;
-    a.has_last = 0;
-    a.pool_dirty = 1;
-    a.cursor = a.returning = 0;
-    ensure_pool(s, a, p.style[which], p.octaves[which]);
-    if (!a.pool_count) return;
-    const u32 at = next_pool_index(s, a, p.style[which]);
-    const u32 slot = a.pool_slot[at], pitch = a.pool_pitch[at];
-    a.last_pitch = static_cast<u8>(pitch);
-    a.has_last = 1;
-    u32 note;
-    if (!a.start_played || !transposed(pitch, p.transpose[which], note)) return;
-    if (a.carrier && a.pitch == note) return;  // already the right note
-    start(s, which, slot, note, p.rate[which]);
+inline u32 count_bits(u32 mask) {
+    u32 count = 0;
+    for (; mask; mask &= mask - 1) ++count;
+    return count;
 }
 
-// How long after the first note a late key can still change it: about 20 ms,
-// because hand-played chords never land together. Always under half the
-// faster arp's step, so it cannot reach either arp's next step.
+// How long a key that arrives alone waits for the rest of a hand-played chord:
+// about 15 ms (a player step lasts 2,500,000 / bpm_x10 microseconds), always
+// under half the faster arp's step, so it cannot reach either arp's next step.
 inline u32 chord_window(u32 bpm_x10, u32 rate) {
-    u32 window = bpm_x10 ? divide(bpm_x10, 125) : kDefaultChordWindow;
+    u32 window = bpm_x10 ? divide(bpm_x10 * 3, 500) : kDefaultChordWindow;
     if (window < 1) window = 1;
     return smaller(window, rate / 2);
 }
@@ -288,22 +275,32 @@ inline u8 carrying(const State& s) {
 inline void clock_step(State& s, const Controls& c) {
     if (!s.active) return;
     const Params p = read_params(c);
-    if (!s.started) {  // every key that arrived with the first is already held
+    if (!s.started) {
         s.started = 1;
-        s.start_wait = chord_window(c.bpm_x10, smaller(p.rate[0], p.rate[1]));
-        for (u32 i = 0; i < kArps; ++i) s.arps[i].start_played = trigger(s, i, p);
+        // Keys that arrived together (a sequenced chord) play at once. A key that
+        // arrived alone waits about 15 ms for the rest of a hand-played chord, so
+        // the first notes are the right ones and nothing is struck twice (choosing
+        // them again when a lower key landed sounded on the device as a two-note
+        // stab). The steps still count from the first key.
+        if (count_bits(s.active) >= 2) {
+            for (u32 i = 0; i < kArps; ++i) trigger(s, i, p);
+        } else {
+            s.waiting = 1;
+            s.start_wait = chord_window(c.bpm_x10, smaller(p.rate[0], p.rate[1]));
+        }
+        return;
+    }
+    if (s.waiting) {
+        for (u32 i = 0; i < kArps; ++i) ++s.arps[i].tick;
+        if (--s.start_wait) return;
+        s.waiting = 0;
+        for (u32 i = 0; i < kArps; ++i) trigger(s, i, p);
         return;
     }
     for (u32 i = 0; i < kArps; ++i) advance(s, i, p);
     if (++s.rearm >= kRearmInterval) {
         s.rearm = 0;
         s.dirty |= static_cast<u8>(s.active & ~carrying(s));
-    }
-    if (!s.start_wait) return;
-    --s.start_wait;
-    if (s.regroup) {
-        s.regroup = 0;
-        for (u32 i = 0; i < kArps; ++i) regroup(s, i, p);
     }
 }
 
@@ -343,17 +340,14 @@ bool press(State& s, const Controls&, u32 note, u32 velocity, Plan& plan) {
     }
     plan.count = 1;
     park(plan.tones[0], note);
-    if (!first) {
-        if (s.start_wait) s.regroup = 1;
-        return true;
-    }
+    if (!first) return true;
     for (u32 i = 0; i < kArps; ++i) {
         Arp& a = s.arps[i];
         a.cursor = a.tick = a.gate_left = 0;
-        a.carrier = a.has_note = a.has_last = a.returning = a.start_played = 0;
+        a.carrier = a.has_note = a.has_last = a.returning = 0;
     }
     s.rearm = s.start_wait = 0;
-    s.started = s.regroup = s.dirty = 0;
+    s.started = s.waiting = s.dirty = 0;
     if (!s.rng) s.rng = 0x9e3779b9u ^ (note << 8) ^ key.velocity;
     return true;
 }
