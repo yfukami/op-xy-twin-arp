@@ -112,6 +112,52 @@ static void styles_and_off() {
     }
 }
 
+// Arp A alone, every step a hit, on C E G held in the order E G C.
+static Notes play_a(u32 style, u32 count) {
+    Host h;
+    configure(h, 0, R16, style, 1, 0);
+    configure(h, 1, R16, machine::Off, 1, 0);
+    h.press(64); h.press(67); h.press(60);
+    h.step(60 * (count - 1) + 1);
+    return pitches(ons(h, 0, 127));
+}
+
+// Every shared pattern, as Chain Arp, Seed Seq and Euclidean Arp play it.
+static void shared_patterns() {
+    struct Case { u32 style; Notes notes; };
+    const Case cases[] = {
+        {machine::Up, {60, 64, 67, 60}}, {machine::Down, {67, 64, 60, 67}},
+        {machine::UpDown, {60, 64, 67, 64, 60}}, {machine::DownUp, {67, 64, 60, 64, 67}},
+        {machine::UpDownBoth, {60, 64, 67, 67, 64, 60, 60}}, {machine::DownUpBoth, {67, 64, 60, 60, 64, 67, 67}},
+        {machine::Order, {64, 67, 60, 64}},
+        {machine::Converge, {60, 67, 64, 60}}, {machine::Diverge, {64, 67, 60, 64}},
+        {machine::Pinky, {60, 67, 64, 67, 60}}, {machine::Thumb, {60, 64, 60, 67, 60}},
+        {machine::Stair, {60, 64, 67, 60}}, {machine::StairUpFalling, {67, 64, 60, 67}},
+        {machine::StairDownFalling, {67, 64, 60, 67}}, {machine::StairDownRising, {60, 64, 67, 60}},
+    };
+    for (const Case& c : cases) require(play_a(c.style, static_cast<u32>(c.notes.size())) == c.notes);
+    for (u32 style : {u32(machine::Shuffle), u32(machine::Random), u32(machine::Drunk)})
+        for (u32 pitch : play_a(style, 60)) require(pitch == 60 || pitch == 64 || pitch == 67);
+
+    // CHORD: the whole chord from one record, highest first and lowest last, at
+    // the same moment, while B carries on with its own notes on other keys.
+    Host h;
+    configure(h, 0, R8, machine::Chord, 1, 0);
+    configure(h, 1, R16, machine::Up, 1, -12);
+    h.press(60); h.press(64); h.press(67);
+    h.step(240 + 1);
+    const std::vector<Event> a = ons(h, 60, 127), b = ons(h, 0, 59);
+    require(pitches(a) == Notes({67, 64, 60, 67, 64, 60, 67, 64, 60}));
+    for (u32 i = 0; i < a.size(); ++i) require(a[i].time == 120 * (i / 3));
+    require(pitches(b) == Notes({48, 52, 55, 48, 52}));
+    require(h.stale_updates == 0 && h.largest_drain <= 8);
+    // CHD/1: the chord, then up; a chord shows its lowest note.
+    require(play_a(machine::ChordThenUp, 4) == Notes({67, 64, 60, 60, 64, 67}));
+    machine::Display shown = {};
+    machine::display(h.state, h.controls, shown);
+    require(std::strncmp(shown.text, "C4", 2) == 0);
+}
+
 static void transpose() {
     Host h;
     configure(h, 0, R16, machine::Up, 1, 24);
@@ -247,6 +293,7 @@ int main() {
     gates_and_idle_keys();
     independent_rates();
     styles_and_off();
+    shared_patterns();
     transpose();
     carriers();
     hand_played_chords();

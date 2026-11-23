@@ -29,7 +29,7 @@ Run every check on one OP-XY (OS 1.2.1), top to bottom, in one project, on the e
 
 13. **Two arps.** Pass: A plays C E G on sixteenths, B plays C E G an octave down on eighths, both from the first step.
 14. **Independent rates.** A `1/8t` against B `1/8`, with a drum on quarter notes. Pass: three A notes and two B notes per beat, locked for several bars.
-15. **Styles and off.** Try every STYLE on each arp. Pass: each sounds right, and `off` silences only that arp.
+15. **Styles and off.** Try every STYLE on each arp. Pass: each plays as the README's Patterns table says, `chord` and `chd/1` sound the whole chord together and light every note of it in that arp's lane, and `off` silences only that arp.
 16. **Transpose.** A `+12`, B `-24`. Pass: both shift. Push A to `+24` with high keys: notes past the top are skipped without hanging.
 17. **No re-strikes.** Hold two or more keys with a long, sustaining patch. Pass: one arp's notes never cut or re-strike the other's.
 18. **One key.** Hold a single key. Pass: both arps play, though each new note may re-strike the other arp's note, and nothing hangs.

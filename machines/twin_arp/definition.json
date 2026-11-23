@@ -33,13 +33,27 @@
       "mapping": {
         "kind": "enum",
         "labels": [
+          "OFF",
           "UP",
           "DOWN",
           "UP-DN",
           "DN-UP",
+          "UPDN+",
+          "DNUP+",
           "ORDER",
+          "CONV",
+          "DIVRG",
+          "PINKY",
+          "THUMB",
+          "STU+",
+          "STU-",
+          "STD-",
+          "STD+",
+          "SHUF",
           "RAND",
-          "OFF"
+          "DRUNK",
+          "CHORD",
+          "CHD-1"
         ]
       },
       "display": "enum"
@@ -146,13 +160,27 @@
       "mapping": {
         "kind": "enum",
         "labels": [
+          "OFF",
           "UP",
           "DOWN",
           "UP-DN",
           "DN-UP",
+          "UPDN+",
+          "DNUP+",
           "ORDER",
+          "CONV",
+          "DIVRG",
+          "PINKY",
+          "THUMB",
+          "STU+",
+          "STU-",
+          "STD-",
+          "STD+",
+          "SHUF",
           "RAND",
-          "OFF"
+          "DRUNK",
+          "CHORD",
+          "CHD-1"
         ]
       },
       "display": "enum"
