@@ -122,7 +122,7 @@ static Notes play_a(u32 style, u32 count) {
     return pitches(ons(h, 0, 127));
 }
 
-// Every shared pattern, as Chain Arp, Seed Seq and Euclidean Arp play it.
+// Every shared pattern, as Chain Arp, Seed Arp and Euclidean Arp play it.
 static void shared_patterns() {
     struct Case { u32 style; Notes notes; };
     const Case cases[] = {

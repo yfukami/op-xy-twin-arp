@@ -34,7 +34,7 @@ const u32 kRearmInterval = 32768;      // parked tones are renewed well before t
 const u32 kDefaultChordWindow = 7;     // player steps, about 15 ms at 120 BPM
 
 const u32 kRates = 9;
-// The patterns, shared with Chain Arp, Seed Seq and Euclidean Arp, in this order;
+// The patterns, shared with Chain Arp, Seed Arp and Euclidean Arp, in this order;
 // OFF silences an arp.
 enum Pattern {
     Off, Up, Down, UpDown, DownUp, UpDownBoth, DownUpBoth, Order, Converge, Diverge,
