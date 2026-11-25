@@ -34,7 +34,8 @@ Run every check on one OP-XY (OS 1.2.1), top to bottom, in one project, on the e
 17. **No re-strikes.** Hold two or more keys with a long, sustaining patch. Pass: one arp's notes never cut or re-strike the other's.
 18. **One key.** Hold a single key. Pass: both arps play, though each new note may re-strike the other arp's note, and nothing hangs.
 19. **Screen.** Pass: the two lanes light the note each arp plays, and the centre shows both notes, with `-` for an arp that is off.
+20. **Hand-played chords.** Play C, E, G by hand several times, at different speeds. Pass: both arps usually start on C. A very quick double attack is acceptable when C lands last.
 
 ## Results
 
-Not yet run.
+2026-11-23 to 2026-11-24, OS 1.2.1, all 20 checks passed on build `all-006`. The build was made from commit `9fb4456` plus the STYLE label change to `u/d+`, `d/u+` and `thmb`.
